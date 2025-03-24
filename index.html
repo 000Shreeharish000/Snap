@@ -171,6 +171,8 @@
 
         const apiKey = '';
 
+let isLocationFixed = false;
+
 function getAddressFromCoordinates(latitude, longitude) {
     const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
 
@@ -193,13 +195,13 @@ function getAddressFromCoordinates(latitude, longitude) {
 }
 
 function init() {
-    if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(function(position) {
-            let latitude = position.coords.latitude;
-            let longitude = position.coords.longitude;
+    if (navigator.geolocation && !isLocationFixed) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
             locationText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
-            
+
             getAddressFromCoordinates(latitude, longitude);
 
             userLocation = {
@@ -207,6 +209,8 @@ function init() {
                 longitude: longitude,
                 address: "Fetching address..."
             };
+
+            isLocationFixed = true; // Mark the location as fixed
         }, function(error) {
             console.error("Error getting location: " + error.message);
             locationText.textContent = "Failed to detect location.";
@@ -215,9 +219,6 @@ function init() {
             timeout: 10000,
             maximumAge: 0
         });
-    } else {
-        console.log("Geolocation is not supported by this browser.");
-        locationText.textContent = "Geolocation is not supported.";
     }
 }
 
