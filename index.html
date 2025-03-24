@@ -119,11 +119,6 @@
 
             <div class="tab-content" id="fir-content">
                 <div class="fir-report" id="fir-report">
-                    <!-- FIR content will be generated here -->
-                </div>
-                <button class="btn-download" id="btn-download-fir">Download FIR</button>
-            </div>
-            
             <button class="btn-close" id="close-modal">Close</button>
         </div>
     </div>
@@ -477,17 +472,9 @@ document.addEventListener("DOMContentLoaded", init);
                 </div>
             `;
         }
-
-        // Download FIR report (simulated)
-        function downloadFirReport() {
-            alert("FIR Report download initiated. In a real app, this would save or print the report.");
-        }
-
-        // Hide modal
         function hideModal() {
             successModal.style.display = 'none';
             
-            // Reset app for a new report
             resetMediaPreviews();
             document.querySelector('.camera-icon').style.display = 'block';
             incidentTypeDisplay.textContent = '';
@@ -498,10 +485,8 @@ document.addEventListener("DOMContentLoaded", init);
             mediaType = null;
             incidentType = null;
             sendBtn.disabled = true;
-            switchTab('alert'); // Reset to alert tab
+            switchTab('alert'); 
         }
-
-        // Initialize the app
         init();
     </script>
 </body>
