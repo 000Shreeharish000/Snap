@@ -22,11 +22,12 @@
                 <span>About the App</span>
             </div>
             <div class="menu-item" id="menu-authorities" onclick="openAuthorities()">
-                <a href="https://eservices.tnpolice.gov.in/CCTNSNICSDC/Links" target="_blank">
-                    <span class="menu-item-icon">👮</span>
-                    <span>About the Authorities</span>
-                </a>
-            </div>
+    <a href="https://eservices.tnpolice.gov.in/CCTNSNICSDC/Links" target="_blank" style="color: white; text-decoration: none;">
+        <span class="menu-item-icon">👮</span>
+        <span>About the Authorities</span>
+    </a>
+</div>
+
             <div class="menu-item" id="menu-rewards" onclick="showRewards()">
                 <span class="menu-item-icon">🏆</span>
                 <span>Rewards</span>
@@ -119,6 +120,11 @@
 
             <div class="tab-content" id="fir-content">
                 <div class="fir-report" id="fir-report">
+                    <!-- FIR content will be generated here -->
+                </div>
+                <button class="btn-download" id="btn-download-fir">Download FIR</button>
+            </div>
+            
             <button class="btn-close" id="close-modal">Close</button>
         </div>
     </div>
@@ -147,6 +153,7 @@
         const alertContent = document.getElementById('alert-content');
         const firContent = document.getElementById('fir-content');
         const firReport = document.getElementById('fir-report');
+        const downloadFir = document.getElementById('btn-download-fir');
         const menuToggle = document.getElementById('menu-toggle');
         const sideMenu = document.getElementById('side-menu');
         const overlay = document.getElementById('overlay');
@@ -163,53 +170,59 @@
         let longPressTimer = null;
         let isRecording = false;
 
-        function updateLocation(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
+const apiKey = '';
 
-    // Display the latitude and longitude
-    document.getElementById("locationText").textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
+function getAddressFromCoordinates(latitude, longitude) {
+    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.display_name) {
+                const address = data.display_name;
+                locationText.textContent = `Current Location: ${address}`;
+                userLocation.address = address;
+            } else {
+                console.error("Error getting address:", data.status);
+                locationText.textContent = "Unable to fetch address";
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching address:', error);
+            locationText.textContent = "Error fetching address";
+        });
 }
 
-function handleLocationError(error) {
-    let errorMessage = "Failed to detect location.";
-    switch (error.code) {
-        case error.PERMISSION_DENIED:
-            errorMessage = "Location access denied. Please allow location services.";
-            break;
-        case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location unavailable. Try again later.";
-            break;
-        case error.TIMEOUT:
-            errorMessage = "Location request timed out. Please retry.";
-            break;
-        default:
-            errorMessage = "An unknown error occurred.";
-            break;
-    }
-
-    console.error("Error getting location: " + errorMessage);
-    document.getElementById("locationText").textContent = errorMessage;
-
-    // Retry location request after 3 seconds
-    setTimeout(requestLocation, 3000);
-}
-
-function requestLocation() {
+function init() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, {
+        navigator.geolocation.watchPosition(function(position) {
+            let latitude = position.coords.latitude;
+            let longitude = position.coords.longitude;
+
+            locationText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
+            
+            getAddressFromCoordinates(latitude, longitude);
+
+            userLocation = {
+                latitude: latitude,
+                longitude: longitude,
+                address: "Fetching address..."
+            };
+        }, function(error) {
+            console.error("Error getting location: " + error.message);
+            locationText.textContent = "Failed to detect location.";
+        }, {
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 0
         });
     } else {
-        document.getElementById("locationText").textContent = "Geolocation is not supported by this browser.";
+        console.log("Geolocation is not supported by this browser.");
+        locationText.textContent = "Geolocation is not supported.";
     }
 }
 
-// Run location detection every time the page loads
-document.addEventListener("DOMContentLoaded", requestLocation);
-
+init();
 
             // Camera button events
             setupCameraEvents();
@@ -223,22 +236,32 @@ document.addEventListener("DOMContentLoaded", requestLocation);
             closeModal.addEventListener('click', hideModal);
             tabAlert.addEventListener('click', () => switchTab('alert'));
             tabFir.addEventListener('click', () => switchTab('fir'));
+            downloadFir.addEventListener('click', downloadFirReport);
+            
+            // Menu event listeners
             menuToggle.addEventListener('click', toggleMenu);
             overlay.addEventListener('click', closeMenu);
             menuItems.forEach(item => {
                 item.addEventListener('click', handleMenuClick);
             });
 
+        // Set up camera events for long press vs short click
         function setupCameraEvents() {
+            // Touch events for mobile
             cameraBtn.addEventListener('touchstart', startLongPress);
             cameraBtn.addEventListener('touchend', endLongPress);
+            
+            // Mouse events for desktop
             cameraBtn.addEventListener('mousedown', startLongPress);
             cameraBtn.addEventListener('mouseup', endLongPress);
             cameraBtn.addEventListener('mouseleave', endLongPress);
         }
+
+        // Start long press timer
         function startLongPress(e) {
             e.preventDefault();
             longPressTimer = setTimeout(() => {
+                // Long press detected - start video recording
                 isRecording = true;
                 recordIndicator.classList.add('active');
                 simulateVideoRecording();
@@ -266,7 +289,7 @@ document.addEventListener("DOMContentLoaded", requestLocation);
         function handleImage(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader()
+                const reader = new FileReader();
                 reader.onload = function(event) {
                     resetMediaPreviews();
                     preview.src = event.target.result;
@@ -471,9 +494,17 @@ document.addEventListener("DOMContentLoaded", requestLocation);
                 </div>
             `;
         }
+
+        // Download FIR report (simulated)
+        function downloadFirReport() {
+            alert("FIR Report download initiated. In a real app, this would save or print the report.");
+        }
+
+        // Hide modal
         function hideModal() {
             successModal.style.display = 'none';
             
+            // Reset app for a new report
             resetMediaPreviews();
             document.querySelector('.camera-icon').style.display = 'block';
             incidentTypeDisplay.textContent = '';
@@ -484,8 +515,10 @@ document.addEventListener("DOMContentLoaded", requestLocation);
             mediaType = null;
             incidentType = null;
             sendBtn.disabled = true;
-            switchTab('alert'); 
+            switchTab('alert'); // Reset to alert tab
         }
+
+        // Initialize the app
         init();
     </script>
 </body>
