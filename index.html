@@ -169,60 +169,43 @@
         let longPressTimer = null;
         let isRecording = false;
 
-        const apiKey = '';
+        let isLocationFixed = false;
 
-let isLocationFixed = false;
+function updateLocation(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
 
-function getAddressFromCoordinates(latitude, longitude) {
-    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+    document.getElementById("locationText").textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
 
-    fetch(geocodeUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.display_name) {
-                const address = data.display_name;
-                locationText.textContent = `Current Location: ${address}`;
-                userLocation.address = address;
-            } else {
-                console.error("Error getting address:", data.status);
-                locationText.textContent = "Unable to fetch address";
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching address:', error);
-            locationText.textContent = "Error fetching address";
-        });
+    userLocation = {
+        latitude: latitude,
+        longitude: longitude
+    };
+
+    isLocationFixed = true;
+}
+
+function handleLocationError(error) {
+    console.error("Error getting location: " + error.message);
+    document.getElementById("locationText").textContent = "Failed to detect location.";
 }
 
 function init() {
-    if (navigator.geolocation && !isLocationFixed) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            locationText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
-
-            getAddressFromCoordinates(latitude, longitude);
-
-            userLocation = {
-                latitude: latitude,
-                longitude: longitude,
-                address: "Fetching address..."
-            };
-
-            isLocationFixed = true; // Mark the location as fixed
-        }, function(error) {
-            console.error("Error getting location: " + error.message);
-            locationText.textContent = "Failed to detect location.";
-        }, {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, {
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 0
         });
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+        document.getElementById("locationText").textContent = "Geolocation not supported.";
     }
 }
 
-init();
+// Run location detection on page load
+document.addEventListener("DOMContentLoaded", init);
+
 
             // Camera button events
             setupCameraEvents();
