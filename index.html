@@ -147,7 +147,6 @@
         const alertContent = document.getElementById('alert-content');
         const firContent = document.getElementById('fir-content');
         const firReport = document.getElementById('fir-report');
-        const downloadFir = document.getElementById('btn-download-fir');
         const menuToggle = document.getElementById('menu-toggle');
         const sideMenu = document.getElementById('side-menu');
         const overlay = document.getElementById('overlay');
@@ -214,32 +213,22 @@ document.addEventListener("DOMContentLoaded", init);
             closeModal.addEventListener('click', hideModal);
             tabAlert.addEventListener('click', () => switchTab('alert'));
             tabFir.addEventListener('click', () => switchTab('fir'));
-            downloadFir.addEventListener('click', downloadFirReport);
-            
-            // Menu event listeners
             menuToggle.addEventListener('click', toggleMenu);
             overlay.addEventListener('click', closeMenu);
             menuItems.forEach(item => {
                 item.addEventListener('click', handleMenuClick);
             });
 
-        // Set up camera events for long press vs short click
         function setupCameraEvents() {
-            // Touch events for mobile
             cameraBtn.addEventListener('touchstart', startLongPress);
             cameraBtn.addEventListener('touchend', endLongPress);
-            
-            // Mouse events for desktop
             cameraBtn.addEventListener('mousedown', startLongPress);
             cameraBtn.addEventListener('mouseup', endLongPress);
             cameraBtn.addEventListener('mouseleave', endLongPress);
         }
-
-        // Start long press timer
         function startLongPress(e) {
             e.preventDefault();
             longPressTimer = setTimeout(() => {
-                // Long press detected - start video recording
                 isRecording = true;
                 recordIndicator.classList.add('active');
                 simulateVideoRecording();
@@ -267,7 +256,7 @@ document.addEventListener("DOMContentLoaded", init);
         function handleImage(e) {
             const file = e.target.files[0];
             if (file) {
-                const reader = new FileReader();
+                const reader = new FileReader()
                 reader.onload = function(event) {
                     resetMediaPreviews();
                     preview.src = event.target.result;
