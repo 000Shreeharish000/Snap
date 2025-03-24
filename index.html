@@ -163,28 +163,39 @@
         let longPressTimer = null;
         let isRecording = false;
 
-        let isLocationFixed = false;
-
-function updateLocation(position) {
+        function updateLocation(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
+    // Display the latitude and longitude
     document.getElementById("locationText").textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
-
-    userLocation = {
-        latitude: latitude,
-        longitude: longitude
-    };
-
-    isLocationFixed = true;
 }
 
 function handleLocationError(error) {
-    console.error("Error getting location: " + error.message);
-    document.getElementById("locationText").textContent = "Failed to detect location.";
+    let errorMessage = "Failed to detect location.";
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied. Please allow location services.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location unavailable. Try again later.";
+            break;
+        case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please retry.";
+            break;
+        default:
+            errorMessage = "An unknown error occurred.";
+            break;
+    }
+
+    console.error("Error getting location: " + errorMessage);
+    document.getElementById("locationText").textContent = errorMessage;
+
+    // Retry location request after 3 seconds
+    setTimeout(requestLocation, 3000);
 }
 
-function init() {
+function requestLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(updateLocation, handleLocationError, {
             enableHighAccuracy: true,
@@ -192,13 +203,12 @@ function init() {
             maximumAge: 0
         });
     } else {
-        console.error("Geolocation is not supported by this browser.");
-        document.getElementById("locationText").textContent = "Geolocation not supported.";
+        document.getElementById("locationText").textContent = "Geolocation is not supported by this browser.";
     }
 }
 
-// Run location detection on page load
-document.addEventListener("DOMContentLoaded", init);
+// Run location detection every time the page loads
+document.addEventListener("DOMContentLoaded", requestLocation);
 
 
             // Camera button events
