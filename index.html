@@ -59,8 +59,6 @@
 </body>
 </html>
 
-
-
         <div class="incident-section">
             <h2>Report an Incident</h2>
             <div class="camera-container" id="camera-btn">
@@ -161,10 +159,9 @@
         const mainContainer = document.getElementById('main-container');
         const menuItems = document.querySelectorAll('.menu-item');
 
-        // State variables
         let incidentType = null;
         let hasMedia = false;
-        let mediaType = null; // 'image' or 'video'
+        let mediaType = null; 
         let userLocation = null;
         let mediaData = null;
         let reportTime = null;
@@ -172,17 +169,59 @@
         let longPressTimer = null;
         let isRecording = false;
 
-        // Initialize the app
-        function init() {
-            // Simulate location detection
-            setTimeout(() => {
-                locationText.textContent = "Current Location : St Josephs Engineering College, TamilNadu";
-                userLocation = {
-                    latitude: 40.7128,
-                    longitude: -74.0060,
-                    address: "Main Street, Downtown"
-                };
-            }, 2000);
+        const apiKey = '';
+
+function getAddressFromCoordinates(latitude, longitude) {
+    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.display_name) {
+                const address = data.display_name;
+                locationText.textContent = `Current Location: ${address}`;
+                userLocation.address = address;
+            } else {
+                console.error("Error getting address:", data.status);
+                locationText.textContent = "Unable to fetch address";
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching address:', error);
+            locationText.textContent = "Error fetching address";
+        });
+}
+
+function init() {
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(function(position) {
+            let latitude = position.coords.latitude;
+            let longitude = position.coords.longitude;
+
+            locationText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
+            
+            getAddressFromCoordinates(latitude, longitude);
+
+            userLocation = {
+                latitude: latitude,
+                longitude: longitude,
+                address: "Fetching address..."
+            };
+        }, function(error) {
+            console.error("Error getting location: " + error.message);
+            locationText.textContent = "Failed to detect location.";
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        });
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+        locationText.textContent = "Geolocation is not supported.";
+    }
+}
+
+init();
 
             // Camera button events
             setupCameraEvents();
@@ -204,7 +243,6 @@
             menuItems.forEach(item => {
                 item.addEventListener('click', handleMenuClick);
             });
-        }
 
         // Set up camera events for long press vs short click
         function setupCameraEvents() {
@@ -228,8 +266,6 @@
                 simulateVideoRecording();
             }, 500);
         }
-
-        // End long press timer
         function endLongPress(e) {
             e.preventDefault();
             
@@ -266,8 +302,6 @@
                 reader.readAsDataURL(file);
             }
         }
-
-        // Handle selected video
         function handleVideo(e) {
             const file = e.target.files[0];
             if (file) {
