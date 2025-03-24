@@ -22,12 +22,11 @@
                 <span>About the App</span>
             </div>
             <div class="menu-item" id="menu-authorities" onclick="openAuthorities()">
-    <a href="https://eservices.tnpolice.gov.in/CCTNSNICSDC/Links" target="_blank" style="color: white; text-decoration: none;">
-        <span class="menu-item-icon">👮</span>
-        <span>About the Authorities</span>
-    </a>
-</div>
-
+                <a href="https://eservices.tnpolice.gov.in/CCTNSNICSDC/Links" target="_blank">
+                    <span class="menu-item-icon">👮</span>
+                    <span>About the Authorities</span>
+                </a>
+            </div>
             <div class="menu-item" id="menu-rewards" onclick="showRewards()">
                 <span class="menu-item-icon">🏆</span>
                 <span>Rewards</span>
@@ -170,59 +169,39 @@
         let longPressTimer = null;
         let isRecording = false;
 
-const apiKey = '';
-
-function getAddressFromCoordinates(latitude, longitude) {
-    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
-
-    fetch(geocodeUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.display_name) {
-                const address = data.display_name;
-                locationText.textContent = `Current Location: ${address}`;
-                userLocation.address = address;
-            } else {
-                console.error("Error getting address:", data.status);
-                locationText.textContent = "Unable to fetch address";
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching address:', error);
-            locationText.textContent = "Error fetching address";
-        });
-}
-
+// Initialize the app
 function init() {
+    // Check if Geolocation is available in the browser
     if (navigator.geolocation) {
+        // Use watchPosition to track the user's location continuously
         navigator.geolocation.watchPosition(function(position) {
+            // If successful, update the location with real-time data
             let latitude = position.coords.latitude;
             let longitude = position.coords.longitude;
-
-            locationText.textContent = `Latitude: ${latitude}, Longitude: ${longitude}`;
             
-            getAddressFromCoordinates(latitude, longitude);
-
+            locationText.textContent = `Current Location: Latitude: ${latitude}, Longitude: ${longitude}`;
+            
             userLocation = {
                 latitude: latitude,
                 longitude: longitude,
-                address: "Fetching address..."
+                address: "Fetching address..." 
             };
+
+            console.log(userLocation); 
         }, function(error) {
             console.error("Error getting location: " + error.message);
             locationText.textContent = "Failed to detect location.";
         }, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            enableHighAccuracy: true, 
+            timeout: 10000,           
+            maximumAge: 0            
         });
-    } else {
-        console.log("Geolocation is not supported by this browser.");
-        locationText.textContent = "Geolocation is not supported.";
-    }
+    } 
 }
 
+// Call init to start real-time location tracking
 init();
+
 
             // Camera button events
             setupCameraEvents();
